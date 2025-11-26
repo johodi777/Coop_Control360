@@ -1,0 +1,67 @@
+/* Estilos específicos para el módulo de Afiliados */
+
+.affiliates-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.affiliate-status-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.affiliate-status-badge:hover {
+  transform: scale(1.05);
+}
+
+.affiliate-form-overlay {
+  backdrop-filter: blur(4px);
+}
+
+.affiliate-form-container {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.affiliate-search-input:focus {
+  box-shadow: 0 0 0 3px rgba(58, 13, 255, 0.1);
+}
+
+.affiliate-table-row:hover {
+  background-color: rgba(26, 26, 34, 0.5);
+  transition: background-color 0.2s;
+}
+
+.affiliate-action-button {
+  transition: all 0.2s;
+}
+
+.affiliate-action-button:hover {
+  transform: scale(1.1);
+}
+

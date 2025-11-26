@@ -1,0 +1,29 @@
+/* Estilos específicos para el módulo de Servicios */
+
+.services-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.service-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.service-category-badge {
+  text-transform: capitalize;
+  padding: 0.25rem 0.5rem;
+  background: rgba(58, 13, 255, 0.1);
+  border-radius: 0.375rem;
+  font-size: 0.75rem;
+}
+
+.service-form-checkbox {
+  accent-color: #3A0DFF;
+}
+

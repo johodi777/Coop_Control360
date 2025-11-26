@@ -1,0 +1,37 @@
+{
+  "name": "coopcontrol360-backend",
+  "version": "1.0.0",
+  "main": "src/app.js",
+  "scripts": {
+    "start": "node src/app.js",
+    "dev": "nodemon src/app.js",
+    "migrate": "node src/utils/run-migrations.js",
+    "cleanup-db": "node src/utils/cleanup-db.js",
+    "fix-db": "node src/utils/fix-database.js",
+    "import-excel": "node src/utils/import-excel.js",
+    "reset-transactions": "node src/utils/reset-transactions.js",
+    "add-columns": "node src/utils/add-affiliate-columns.js",
+    "add-service-columns": "node src/utils/add-service-columns.js"
+  },
+  "dependencies": {
+    "axios": "^1.6.0",
+    "bcrypt": "^5.1.0",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "express": "^4.18.2",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.0",
+    "moment": "^2.29.4",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.2.0",
+    "node-cron": "^3.0.3",
+    "nodemailer": "^6.9.7",
+    "pdfkit": "^0.13.0",
+    "sequelize": "^6.32.1",
+    "winston": "^3.8.2",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.22"
+  }
+}

@@ -1,0 +1,36 @@
+# Docker Compose - OPCIONAL
+# Si prefieres usar MySQL Workbench, NO necesitas ejecutar este archivo
+# Solo úsalo si quieres levantar el backend en Docker (sin la base de datos)
+
+version: '3.8'
+
+services:
+  # Base de datos MySQL (OPCIONAL - Comentar si usas MySQL Workbench)
+  # Descomenta estas líneas solo si quieres usar MySQL en Docker
+  # db:
+  #   image: mysql:8.0
+  #   environment:
+  #     MYSQL_DATABASE: coopcontrol
+  #     MYSQL_USER: coop
+  #     MYSQL_PASSWORD: secret
+  #     MYSQL_ROOT_PASSWORD: rootpassword
+  #   volumes:
+  #     - db-data:/var/lib/mysql
+  #   ports:
+  #     - "3306:3306"
+  #   command: ["--default-authentication-plugin=mysql_native_password"]
+
+  # Backend (OPCIONAL - Puedes ejecutar con npm run dev en su lugar)
+  # backend:
+  #   build: .
+  #   env_file:
+  #     - .env
+  #   depends_on:
+  #     - db
+  #   ports:
+  #     - "4000:4000"
+  #   volumes:
+  #     - .:/usr/src/app
+
+# volumes:
+#   db-data:

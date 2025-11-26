@@ -1,0 +1,116 @@
+const cron = require('node-cron');
+const db = require('../models');
+const logger = require('../utils/logger');
+const { Op } = require('sequelize');
+
+const Affiliate = db.Affiliate;
+
+/**
+ * Actualiza el estado de pago de todos los afiliados activos a "pending" (FALTA POR PAGAR)
+ * @param {boolean} force - Si es true, ejecuta sin verificar el día del mes (útil para pruebas manuales)
+ */
+async function resetMonthlyPayments(force = false) {
+  try {
+    logger.info('Iniciando actualización mensual de estados de pago...');
+    
+    if (!force) {
+      const today = new Date();
+      const dayOfMonth = today.getDate();
+      
+      // Solo ejecutar si es el día 1 del mes (a menos que sea forzado)
+      if (dayOfMonth !== 1) {
+        logger.info(`No es el día 1 del mes (hoy es día ${dayOfMonth}). Saltando actualización.`);
+        return {
+          success: false,
+          message: `No es el día 1 del mes. Hoy es día ${dayOfMonth}. Use force=true para ejecutar manualmente.`
+        };
+      }
+    }
+
+    // Actualizar afiliados activos que no estén retirados
+    // No actualizar los que tienen estado "retired" (retiro) en paymentStatus o status
+    const [updatedCount] = await Affiliate.update(
+      { 
+        paymentStatus: 'pending' 
+      },
+      {
+        where: {
+          [Op.and]: [
+            { status: { [Op.ne]: 'retirado' } }, // No actualizar afiliados retirados
+            { paymentStatus: { [Op.ne]: 'retired' } } // No actualizar los que tienen estado de pago "retired"
+          ]
+        }
+      }
+    );
+
+    logger.info(`✓ Actualización mensual completada: ${updatedCount} afiliados actualizados a "FALTA POR PAGAR"`);
+    
+    // Registrar en auditoría
+    try {
+      await db.AuditLog.create({
+        userId: null, // Sistema automático
+        affiliateId: null,
+        action: 'MONTHLY_PAYMENT_RESET',
+        module: 'affiliates',
+        description: `Actualización automática mensual: ${updatedCount} afiliados actualizados a estado "pending"`,
+        ipAddress: 'system',
+        userAgent: 'scheduled-task',
+        entityType: 'affiliate',
+        entityId: null,
+        severity: 'info'
+      });
+    } catch (auditError) {
+      logger.warn('Error registrando en auditoría:', auditError);
+    }
+
+    return {
+      success: true,
+      updated: updatedCount,
+      message: `Se actualizaron ${updatedCount} afiliados a estado "FALTA POR PAGAR"`
+    };
+  } catch (error) {
+    logger.error('Error en actualización mensual de pagos:', error);
+    throw error;
+  }
+}
+
+/**
+ * Inicia el cron job para ejecutar la actualización mensual
+ */
+function startMonthlyPaymentReset() {
+  // Ejecutar el día 1 de cada mes a las 00:00 (medianoche)
+  // Formato cron: minuto hora día mes día-semana
+  // '0 0 1 * *' = día 1 de cada mes a las 00:00
+  cron.schedule('0 0 1 * *', async () => {
+    logger.info('Ejecutando tarea programada: Actualización mensual de estados de pago');
+    try {
+      await resetMonthlyPayments();
+    } catch (error) {
+      logger.error('Error ejecutando tarea programada de actualización mensual:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "America/Bogota" // Zona horaria de Colombia
+  });
+
+  logger.info('Tarea programada iniciada: Actualización mensual de estados de pago (día 1 de cada mes a las 00:00)');
+  
+  // Ejecutar inmediatamente si es el día 1 (útil para pruebas o si el servidor se reinicia el día 1)
+  const today = new Date();
+  if (today.getDate() === 1) {
+    logger.info('Es el día 1 del mes, ejecutando actualización inmediata...');
+    setTimeout(async () => {
+      try {
+        await resetMonthlyPayments();
+      } catch (error) {
+        logger.error('Error en ejecución inmediata:', error);
+      }
+    }, 5000); // Esperar 5 segundos después de iniciar el servidor
+  }
+}
+
+module.exports = {
+  resetMonthlyPayments,
+  startMonthlyPaymentReset
+};
+

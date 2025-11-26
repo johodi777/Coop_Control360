@@ -1,0 +1,30 @@
+/* Estilos específicos para el módulo de Auditoría */
+
+.audit-container {
+  animation: fadeIn 0.3s ease-in;
+}
+
+.audit-severity-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.75rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+  transition: all 0.2s;
+}
+
+.audit-action-badge {
+  font-size: 0.75rem;
+  font-weight: 500;
+  color: #9CA3AF;
+}
+
+.audit-log-row {
+  transition: background-color 0.2s;
+}
+
+.audit-log-row:hover {
+  background-color: rgba(26, 26, 34, 0.5);
+}
+
