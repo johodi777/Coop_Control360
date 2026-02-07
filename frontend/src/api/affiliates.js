@@ -35,5 +35,10 @@ export const affiliatesAPI = {
     });
     return response.data;
   },
+
+  resetMonthlyPayments: async () => {
+    const response = await api.post('/affiliates/reset-monthly-payments');
+    return response.data;
+  },
 };
 

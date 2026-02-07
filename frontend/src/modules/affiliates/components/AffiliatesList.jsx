@@ -6,7 +6,7 @@ import Card from "../../../components/ui/Card";
 import AffiliateForm from "./AffiliateForm";
 import PaymentSummary from "./PaymentSummary";
 import ImportExcel from "./ImportExcel";
-import { Plus, Search, Edit, Trash2, Eye, Filter, Users, DollarSign, Calendar, Upload, CheckCircle, AlertCircle, UserPlus, UserX } from "lucide-react";
+import { Plus, Search, Edit, Trash2, Eye, Filter, Users, DollarSign, Calendar, Upload, CheckCircle, AlertCircle, UserPlus, UserX, RefreshCw } from "lucide-react";
 import { formatCurrency } from "../../../utils/formatCurrency";
 import { useAssistants } from "../../../hooks/useAssistants";
 
@@ -39,18 +39,33 @@ export default function AffiliatesList() {
   const loadAffiliates = async () => {
     try {
       setLoading(true);
-      // Solicitar todos los afiliados sin límite de paginación para calcular estadísticas correctas
-      const response = await affiliatesAPI.getAll({ limit: 10000, page: 1 });
-      console.log('Respuesta de getAll:', response);
+      // Cargar todos los afiliados para estadísticas y filtros
+      // Usar un límite alto pero razonable (1000) para evitar problemas de rendimiento
+      // Si hay más de 1000, se pueden agregar más páginas después
+      let allAffiliates = [];
+      let page = 1;
+      let hasMore = true;
+      const pageSize = 100; // Cargar en lotes de 100
       
-      // El backend puede devolver { success: true, data: [...] } o directamente un array
-      if (response && response.data) {
-        setAffiliates(Array.isArray(response.data) ? response.data : []);
-      } else if (Array.isArray(response)) {
-        setAffiliates(response);
-      } else {
-        setAffiliates([]);
+      // Cargar todas las páginas
+      while (hasMore && page <= 10) { // Máximo 10 páginas (1000 afiliados)
+        const response = await affiliatesAPI.getAll({ limit: pageSize, page });
+        
+        if (response && response.data && Array.isArray(response.data)) {
+          allAffiliates = [...allAffiliates, ...response.data];
+          
+          // Verificar si hay más páginas
+          const total = response.pagination?.total || 0;
+          const totalPages = response.pagination?.totalPages || 1;
+          hasMore = page < totalPages && allAffiliates.length < total;
+          page++;
+        } else {
+          hasMore = false;
+        }
       }
+      
+      setAffiliates(allAffiliates);
+      console.log(`✓ Cargados ${allAffiliates.length} afiliados`);
     } catch (error) {
       console.error("Error cargando afiliados:", error);
       console.error("Detalles del error:", error.response?.data);
@@ -97,6 +112,31 @@ export default function AffiliatesList() {
     setShowForm(false);
     setEditingAffiliate(null);
     loadAffiliates();
+  };
+
+  const handleResetMonthlyPayments = async () => {
+    if (!window.confirm('¿Estás seguro de resetear los estados de pago de todos los afiliados activos a "Falta por pagar"?\n\nEsta acción actualizará el estado de pago de todos los afiliados activos.')) {
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const response = await affiliatesAPI.resetMonthlyPayments();
+      
+      if (response.success) {
+        alert(`✅ ${response.message}\n\nSe actualizaron ${response.data?.updated || 0} afiliados.`);
+        // Recargar afiliados para ver los cambios
+        await loadAffiliates();
+      } else {
+        alert(`⚠️ ${response.message || 'No se pudo ejecutar el reset'}`);
+      }
+    } catch (error) {
+      console.error("Error ejecutando reset mensual:", error);
+      const errorMsg = error.response?.data?.message || "Error al ejecutar el reset mensual";
+      alert(`❌ ${errorMsg}`);
+    } finally {
+      setLoading(false);
+    }
   };
 
 
@@ -290,6 +330,17 @@ export default function AffiliatesList() {
             <DollarSign size={18} className="mr-1 sm:mr-2" />
             <span className="hidden sm:inline">Resumen de Pagos</span>
             <span className="sm:hidden">Resumen</span>
+          </Button>
+          <Button 
+            variant="outline" 
+            onClick={handleResetMonthlyPayments} 
+            className="text-xs sm:text-sm"
+            disabled={loading}
+            title="Resetear estados de pago a 'Falta por pagar'"
+          >
+            <RefreshCw size={18} className="mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Reset Mensual</span>
+            <span className="sm:hidden">Reset</span>
           </Button>
           <Button onClick={handleNew} className="text-xs sm:text-sm">
             <Plus size={18} className="mr-1 sm:mr-2" />

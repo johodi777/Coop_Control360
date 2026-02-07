@@ -166,7 +166,12 @@ git push -u origin main
 **Si te pide autenticación:**
 - Usa un **Personal Access Token** (no tu contraseña)
 - Cómo crear uno: GitHub > Settings > Developer settings > Personal access tokens > Tokens (classic)
-- Permisos necesarios: `repo` (todos los permisos de repositorio)
+- **⚠️ Permisos necesarios:**
+  - ✅ `repo` (todos los permisos de repositorio)
+  - ✅ `workflow` (⚠️ IMPORTANTE: necesario para crear/actualizar workflows)
+  
+**Si recibes error sobre `workflow` scope:**
+- Ver solución detallada en: `deployment/digitalocean/SOLUCION_ERROR_WORKFLOW.md`
 
 ---
 

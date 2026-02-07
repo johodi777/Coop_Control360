@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAuthStore from "../context/authStore";
 import Button from "../components/ui/Button";
@@ -8,8 +8,41 @@ export default function Login() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
-  const { login, loading, error } = useAuthStore();
+  const { login, loading, error, isAuthenticated, checkAuth } = useAuthStore();
   const navigate = useNavigate();
+
+  // Si ya está autenticado, redirigir al dashboard (en background, no bloquear)
+  useEffect(() => {
+    let isMounted = true;
+    
+    const verifyAndRedirect = async () => {
+      const token = localStorage.getItem('token');
+      if (token) {
+        try {
+          // Verificar en background (no bloquear UI)
+          const isValid = await Promise.race([
+            checkAuth(),
+            new Promise((_, reject) => setTimeout(() => reject(new Error('Timeout')), 2000))
+          ]).catch(() => false);
+          
+          if (isMounted && isValid) {
+            navigate("/", { replace: true });
+          }
+        } catch (error) {
+          // Si hay error, dejar que el usuario intente login (no bloquear)
+          console.warn('Error verificando auth en login:', error);
+        }
+      }
+    };
+    
+    // Ejecutar en background después de un pequeño delay
+    const timer = setTimeout(verifyAndRedirect, 100);
+    
+    return () => {
+      isMounted = false;
+      clearTimeout(timer);
+    };
+  }, [isAuthenticated, navigate, checkAuth]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

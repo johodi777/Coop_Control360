@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate, Outlet } from "react-router-dom";
 import Layout from "../components/layout/Layout";
+import AuthProvider from "../components/auth/AuthProvider";
 import useAuthStore from "../context/authStore";
 
 import Dashboard from "../pages/Dashboard";
@@ -13,7 +14,17 @@ import Login from "../pages/Login";
 
 function ProtectedRoute() {
   const { isAuthenticated } = useAuthStore();
-  return isAuthenticated ? <Outlet /> : <Navigate to="/login" />;
+  const token = localStorage.getItem('token');
+  
+  // Si no hay token, redirigir inmediatamente
+  if (!token) {
+    return <Navigate to="/login" replace />;
+  }
+  
+  // Si hay token pero no está autenticado aún, permitir acceso
+  // El AuthProvider manejará la redirección si el token es inválido
+  // Esto evita la pantalla negra mientras se verifica
+  return <Outlet />;
 }
 
 function LayoutWrapper() {
@@ -31,21 +42,23 @@ export default function AppRouter() {
         v7_relativeSplatPath: true,
       }}
     >
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route element={<ProtectedRoute />}>
-          <Route element={<LayoutWrapper />}>
-            <Route path="/" element={<Dashboard />} />
-            <Route path="/afiliados" element={<Affiliates />} />
-            <Route path="/pagos" element={<Payments />} />
-            <Route path="/servicios" element={<Services />} />
-            <Route path="/pqrs" element={<Pqrs />} />
-            <Route path="/auditoria" element={<Audit />} />
-            <Route path="/configuracion" element={<Settings />} />
+      <AuthProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route element={<ProtectedRoute />}>
+            <Route element={<LayoutWrapper />}>
+              <Route path="/" element={<Dashboard />} />
+              <Route path="/afiliados" element={<Affiliates />} />
+              <Route path="/pagos" element={<Payments />} />
+              <Route path="/servicios" element={<Services />} />
+              <Route path="/pqrs" element={<Pqrs />} />
+              <Route path="/auditoria" element={<Audit />} />
+              <Route path="/configuracion" element={<Settings />} />
+            </Route>
           </Route>
-        </Route>
-        <Route path="*" element={<Navigate to="/" />} />
-      </Routes>
+          <Route path="*" element={<Navigate to="/" />} />
+        </Routes>
+      </AuthProvider>
     </BrowserRouter>
   );
 }

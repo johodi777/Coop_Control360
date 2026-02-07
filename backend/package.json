@@ -11,7 +11,9 @@
     "import-excel": "node src/utils/import-excel.js",
     "reset-transactions": "node src/utils/reset-transactions.js",
     "add-columns": "node src/utils/add-affiliate-columns.js",
-    "add-service-columns": "node src/utils/add-service-columns.js"
+    "add-service-columns": "node src/utils/add-service-columns.js",
+    "reset-monthly": "node scripts/monthly-reset-cron.js",
+    "setup-cron": "bash scripts/setup-cron.sh"
   },
   "dependencies": {
     "axios": "^1.6.0",

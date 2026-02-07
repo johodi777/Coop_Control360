@@ -5,6 +5,7 @@ const api = axios.create({
   headers: {
     'Content-Type': 'application/json',
   },
+  timeout: 10000, // 10 segundos de timeout por defecto
 });
 
 // Interceptor para agregar token de autenticación
@@ -26,8 +27,15 @@ api.interceptors.response.use(
   (response) => response,
   (error) => {
     if (error.response?.status === 401) {
+      // Token inválido o expirado
       localStorage.removeItem('token');
-      window.location.href = '/login';
+      
+      // Actualizar el store si está disponible
+      // (evitar importación circular)
+      if (window.location.pathname !== '/login') {
+        // Solo redirigir si no estamos ya en login
+        window.location.href = '/login';
+      }
     }
     return Promise.reject(error);
   }
